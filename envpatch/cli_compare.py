@@ -28,11 +28,23 @@ def build_compare_parser(subparsers=None) -> argparse.ArgumentParser:
 
 
 def run_compare(args: argparse.Namespace) -> int:
+    """Execute the compare sub-command.
+
+    Parses *source* and *target* .env files, computes their diff, and prints
+    the result to stdout.  Returns 0 when the files are identical, 1 when
+    differences exist, and 2 on any I/O or parse error.
+    """
     try:
         source = parse(args.source)
         target = parse(args.target)
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
+        return 2
+    except PermissionError as exc:
+        print(f"error: permission denied – {exc}", file=sys.stderr)
+        return 2
+    except OSError as exc:
+        print(f"error: could not read file – {exc}", file=sys.stderr)
         return 2
 
     result = compare(source, target)
