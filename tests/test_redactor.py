@@ -100,7 +100,16 @@ def test_redact_override_patterns_ignores_defaults():
 
 
 def test_redact_empty_value_sensitive_key():
+    """A sensitive key with an empty value should still be marked as redacted."""
     env = _make_env(("DB_PASSWORD", ""))
     result = redact(env)
     assert result.entries[0].redacted
     assert result.entries[0].value == _REDACTED_PLACEHOLDER
+
+
+def test_redact_empty_file():
+    """Redacting an empty EnvFile should return an empty result with no redacted keys."""
+    env = EnvFile(entries=[], path=".env")
+    result = redact(env)
+    assert result.entries == []
+    assert result.redacted_keys == []
